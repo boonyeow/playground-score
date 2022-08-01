@@ -26,8 +26,6 @@ dependencies {
 }
 
 optimizedJar {
-    //mainClassName = 'com.iconloop.score.token.example.IRC721Enumerable'
-    //mainClassName = 'com.iconloop.score.token.irc3.IRC3BasicToken'
     mainClassName = 'com.iconloop.score.token.alice.Alice'
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from {
@@ -40,6 +38,7 @@ deployJar {
         lisbon {
             uri = 'https://lisbon.net.solidwallet.io/api/v3'
             nid = 0x2
+            to="cx67deb13f90599e44068b1478edf9ab824f785e99"
         }
         sejong {
             uri = 'https://sejong.net.solidwallet.io/api/v3'
@@ -60,7 +59,7 @@ deployJar {
     password="test123@"
     parameters {
          arg('_name', 'TESTNAME')
-        arg('_symbol', 'TETT')
+        arg('_signerAddress', 'hx1f199d7b495ebb2ce3cf704a5dc3c2ac584b6cd3')
     }
 }
 

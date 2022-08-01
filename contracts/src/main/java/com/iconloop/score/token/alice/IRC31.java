@@ -1,19 +1,3 @@
-/*
- * Copyright 2021 ICONation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.iconloop.score.token.alice;
 
 import score.Address;
@@ -31,19 +15,9 @@ public interface IRC31 {
      * Returns the balance of the owner's tokens.
      *
      * @param _owner The address of the token holder
-     * @param _id    ID of the token
      * @return The _owner's balance of the token type requested
      */
-    BigInteger balanceOf(Address _owner, BigInteger _id);
-
-    /**
-     * Returns the balance of multiple owner/id pairs.
-     *
-     * @param _owners The addresses of the token holders
-     * @param _ids    IDs of the tokens
-     * @return The list of balance (i.e. balance for each owner/id pair)
-     */
-    BigInteger[] balanceOfBatch(Address[] _owners, BigInteger[] _ids);
+    BigInteger balanceOf(Address _owner);
 
     /**
      * Returns an URI for a given token ID.

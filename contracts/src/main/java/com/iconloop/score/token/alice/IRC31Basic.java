@@ -38,7 +38,7 @@ public abstract class IRC31Basic implements IRC31 {
     // SCORE DB
     // ================================================
     // id => (owner => balance)
-    private final BranchDB<BigInteger, DictDB<Address, BigInteger>> balances = Context.newBranchDB("balances", BigInteger.class);
+    private final DictDB<Address, BigInteger> balances = Context.newDictDB("balances", BigInteger.class);
     // owner => (operator => approved)
     private final BranchDB<Address, DictDB<Address, Boolean>> operatorApproval = Context.newBranchDB("approval", Boolean.class);
     // id => token URI
@@ -48,24 +48,12 @@ public abstract class IRC31Basic implements IRC31 {
     // External methods
     // ================================================
 
-    @External(readonly=true)
-    public BigInteger balanceOf(Address _owner, BigInteger _id) {
-        return balances.at(_id).getOrDefault(_owner, BigInteger.ZERO);
+    @External(readonly = true)
+    public BigInteger balanceOf(Address _owner) {
+        return balances.getOrDefault(_owner, BigInteger.ZERO);
     }
 
-    @External(readonly=true)
-    public BigInteger[] balanceOfBatch(Address[] _owners, BigInteger[] _ids) {
-        Context.require(_owners.length == _ids.length,
-                "_owners array size must match with _ids array size");
-
-        BigInteger[] balances = new BigInteger[_owners.length];
-        for (int i = 0; i < _owners.length; i++) {
-            balances[i] = balanceOf(_owners[i], _ids[i]);
-        }
-        return balances;
-    }
-
-    @External(readonly=true)
+    @External(readonly = true)
     public String tokenURI(BigInteger _id) {
         return tokenURIs.get(_id);
     }
@@ -78,13 +66,12 @@ public abstract class IRC31Basic implements IRC31 {
                 "_to must be non-zero");
         Context.require(_from.equals(caller) || this.isApprovedForAll(_from, caller),
                 "Need operator approval for 3rd party transfers");
-        Context.require(BigInteger.ZERO.compareTo(_value) <= 0 && _value.compareTo(balanceOf(_from, _id)) <= 0,
+        Context.require(BigInteger.ZERO.compareTo(_value) <= 0 && _value.compareTo(balanceOf(_from)) <= 0,
                 "Insufficient funds");
-
+        _beforeTokenTransfer(_from, _to, _id);
         // Transfer funds
-        DictDB<Address, BigInteger> balance = balances.at(_id);
-        balance.set(_from, balanceOf(_from, _id).subtract(_value));
-        balance.set(_to, balanceOf(_to, _id).add(_value));
+        balances.set(_from, balanceOf(_from).subtract(_value));
+        balances.set(_to, balanceOf(_to).add(_value));
 
         // Emit event
         this.TransferSingle(caller, _from, _to, _id, _value);
@@ -93,6 +80,7 @@ public abstract class IRC31Basic implements IRC31 {
             // Call {@code onIRC31Received} if the recipient is a contract
             Context.call(_to, "onIRC31Received", caller, _from, _id, _value, _data == null ? new byte[]{} : _data);
         }
+        _afterTokenTransfer(_from, _to, _id);
     }
 
     @External
@@ -113,16 +101,15 @@ public abstract class IRC31Basic implements IRC31 {
             Context.require(_value.compareTo(BigInteger.ZERO) >= 0,
                     "Insufficient funds");
 
-            BigInteger balanceFrom = balanceOf(_from, _id);
+            BigInteger balanceFrom = balanceOf(_from);
 
             Context.require(_value.compareTo(balanceFrom) <= 0,
                     "Insufficient funds");
 
             // Transfer funds
-            BigInteger balanceTo = balanceOf(_to, _id);
-            DictDB<Address, BigInteger> balance = balances.at(_id);
-            balance.set(_from, balanceFrom.subtract(_value));
-            balance.set(_to, balanceTo.add(_value));
+            BigInteger balanceTo = balanceOf(_to);
+            balances.set(_from, balanceFrom.subtract(_value));
+            balances.set(_to, balanceTo.add(_value));
         }
 
         // Emit event
@@ -143,7 +130,7 @@ public abstract class IRC31Basic implements IRC31 {
         this.ApprovalForAll(caller, _operator, _approved);
     }
 
-    @External(readonly=true)
+    @External(readonly = true)
     public boolean isApprovedForAll(Address _owner, Address _operator) {
         return operatorApproval.at(_owner).getOrDefault(_operator, false);
     }
@@ -152,17 +139,21 @@ public abstract class IRC31Basic implements IRC31 {
     // Event Logs
     // ================================================
 
-    @EventLog(indexed=3)
-    public void TransferSingle(Address _operator, Address _from, Address _to, BigInteger _id, BigInteger _value) {}
+    @EventLog(indexed = 3)
+    public void TransferSingle(Address _operator, Address _from, Address _to, BigInteger _id, BigInteger _value) {
+    }
 
-    @EventLog(indexed=3)
-    public void TransferBatch(Address _operator, Address _from, Address _to, byte[] _ids, byte[] _values) {}
+    @EventLog(indexed = 3)
+    public void TransferBatch(Address _operator, Address _from, Address _to, byte[] _ids, byte[] _values) {
+    }
 
-    @EventLog(indexed=2)
-    public void ApprovalForAll(Address _owner, Address _operator, boolean _approved) {}
+    @EventLog(indexed = 2)
+    public void ApprovalForAll(Address _owner, Address _operator, boolean _approved) {
+    }
 
-    @EventLog(indexed=1)
-    public void URI(BigInteger _id, String _value) {}
+    @EventLog(indexed = 1)
+    public void URI(BigInteger _id, String _value) {
+    }
 
     // ================================================
     // Internal methods
@@ -197,8 +188,10 @@ public abstract class IRC31Basic implements IRC31 {
     private void _mintInternal(Address owner, BigInteger id, BigInteger amount) {
         Context.require(amount.compareTo(BigInteger.ZERO) > 0, "Invalid amount");
 
-        BigInteger balance = balanceOf(owner, id);
-        balances.at(id).set(owner, balance.add(amount));
+        _beforeTokenTransfer(ZERO_ADDRESS, owner, id);
+        BigInteger balance = balanceOf(owner);
+        balances.set(owner, balance.add(amount));
+        _afterTokenTransfer(ZERO_ADDRESS, owner, id);
     }
 
     protected void _mint(Address owner, BigInteger id, BigInteger amount) {
@@ -223,10 +216,11 @@ public abstract class IRC31Basic implements IRC31 {
 
     private void _burnInternal(Address owner, BigInteger id, BigInteger amount) {
         Context.require(amount.compareTo(BigInteger.ZERO) > 0, "Invalid amount");
-
-        BigInteger balance = balanceOf(owner, id);
+        _beforeTokenTransfer(owner, ZERO_ADDRESS, id);
+        BigInteger balance = balanceOf(owner);
         Context.require(balance.compareTo(amount) >= 0, "Insufficient funds");
-        balances.at(id).set(owner, balance.subtract(amount));
+        balances.set(owner, balance.subtract(amount));
+        _afterTokenTransfer(owner,ZERO_ADDRESS, id);
     }
 
     protected void _burn(Address owner, BigInteger id, BigInteger amount) {
@@ -244,8 +238,21 @@ public abstract class IRC31Basic implements IRC31 {
             BigInteger amount = amounts[i];
             _burnInternal(owner, id, amount);
         }
-
         // emit transfer event for Burn semantic
         TransferBatch(owner, owner, ZERO_ADDRESS, rlpEncode(ids), rlpEncode(amounts));
+    }
+
+    protected void _beforeTokenTransfer(
+            Address from,
+            Address to,
+            BigInteger tokenId
+    ) {
+    }
+
+    protected void _afterTokenTransfer(
+            Address from,
+            Address to,
+            BigInteger tokenId
+    ){
     }
 }
