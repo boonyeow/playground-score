@@ -508,13 +508,13 @@ public class AliceTest extends TestBase {
     @Test
     void project_info_tc1(){
         assertEquals("MyIRC3Token", tokenScore.call("getProjectInfo", "name"));
-        tokenScore.invoke(owner, "updateProjectInfo", "hey", "", "", "", BigInteger.ZERO, BigInteger.ZERO, BigInteger.ZERO, BigInteger.ZERO);
+        tokenScore.invoke(owner, "updateProjectInfo", "hey", "", "", "", BigInteger.ZERO, BigInteger.ZERO, BigInteger.ZERO, BigInteger.ZERO, BigInteger.ZERO);
         assertEquals(1,1);
         assertEquals("hey", tokenScore.call("getProjectInfo", "name"));
         assertEquals("", tokenScore.call("getProjectInfo", "description"));
         assertEquals("", tokenScore.call("getProjectInfo", "details"));
         assertEquals(BigInteger.ZERO.toString(), tokenScore.call("getProjectInfo", "fundingGoal"));
-        tokenScore.invoke(owner, "updateProjectInfo", "hey", "", "", "", BigInteger.ONE , BigInteger.ZERO, BigInteger.ZERO, BigInteger.ZERO);
+        tokenScore.invoke(owner, "updateProjectInfo", "hey", "", "", "", BigInteger.ONE , BigInteger.ZERO, BigInteger.ZERO, BigInteger.ZERO, BigInteger.ZERO);
         assertEquals(BigInteger.ONE.toString(), tokenScore.call("getProjectInfo", "fundingGoal"));
     }
 
@@ -522,7 +522,7 @@ public class AliceTest extends TestBase {
     void mint_tc1(){
         BigInteger EXA = BigInteger.valueOf(1_000_000_000_000_000_000L);
         assertEquals("MyIRC3Token", tokenScore.call("getProjectInfo", "name"));
-        tokenScore.invoke(owner, "updateProjectInfo", "hey", "", "", "", BigInteger.ZERO, BigInteger.ONE, BigInteger.ZERO, BigInteger.ZERO);
+        tokenScore.invoke(owner, "updateProjectInfo", "hey", "", "", "", BigInteger.ZERO, BigInteger.ONE, BigInteger.ZERO, BigInteger.ZERO, BigInteger.ZERO);
 //        sm.call(BigInteger.valueOf(10), owner.getAddress(), "test1", BigInteger.valueOf(10));
 //        Context.call(BigInteger.valueOf(10), tokenScore.getAddress(), "test1", BigInteger.valueOf(10));
         sm.call(owner, BigInteger.valueOf(10).multiply(EXA), tokenScore.getAddress(), "test1", BigInteger.valueOf(10));

@@ -1,7 +1,4 @@
 package com.iconloop.score.token.alice;
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.JsonArray;
 import score.*;
 import score.Context;
 import score.annotation.External;
@@ -18,6 +15,7 @@ public class Alice extends IRC31MintBurn {
     private static final BigInteger EXA = BigInteger.valueOf(1_000_000_000_000_000_000L);
     private final String name;
     private final Address signerAddress;
+    // Address, Set() -> dictDB; address custom class
 
     private final VarDB<BigInteger> proposalCounter = Context.newVarDB("proposalCounter", BigInteger.class);
     private final DictDB<BigInteger, Proposal> proposalDB = Context.newDictDB("proposalDB", Proposal.class);
@@ -42,7 +40,7 @@ public class Alice extends IRC31MintBurn {
     }
 
     @External
-    public void updateProjectInfo(@Optional String name, @Optional String thumbnailSrc, @Optional String description, @Optional String details, @Optional BigInteger fundingGoal, @Optional BigInteger pricePerNFT, @Optional BigInteger startTimestamp, @Optional BigInteger endTimestamp){
+    public void updateProjectInfo(@Optional String name, @Optional String thumbnailSrc, @Optional String description, @Optional String details, @Optional BigInteger fundingGoal, @Optional BigInteger pricePerNFT, @Optional BigInteger startTimestamp, @Optional BigInteger endTimestamp, @Optional BigInteger withdrawalRate){
         ProjectInfo pi = projectInfo.get();
         if(name != ""){
             pi.setName(name);
@@ -74,6 +72,10 @@ public class Alice extends IRC31MintBurn {
 
         if(!endTimestamp.equals(BigInteger.ZERO)){
             pi.setEndTimestamp(endTimestamp);
+        }
+
+        if(!withdrawalRate.equals(BigInteger.ZERO)){
+            pi.setWithdrawalRate(withdrawalRate);
         }
 
         projectInfo.set(pi);
@@ -126,6 +128,7 @@ public class Alice extends IRC31MintBurn {
                 id,
                 currentBlockHeight,
                 currentBlockHeight.add(BigInteger.valueOf(1000)),
+                Context.getTransactionTimestamp(),
                 PROPOSAL_STATUS_ACTIVE,
                 caller,
                 new VoteInfo()
@@ -542,7 +545,7 @@ public class Alice extends IRC31MintBurn {
 
     @External
     @Payable
-    public void test1(BigInteger quantity){ // mint
+    public void test1(BigInteger quantity){ // mint; to change name
         Context.require(quantity.compareTo(BigInteger.ONE) >= 0, "User must mint at least one NFT");
         ProjectInfo pi = projectInfo.get();
         BigInteger totalPrice = quantity.multiply(pi.pricePerNFT).multiply(EXA);
@@ -557,6 +560,7 @@ public class Alice extends IRC31MintBurn {
     @External(readonly = true)
     public Address[] getValidDelegates(Address user){
         // to test
+
         Set<Address> delegates = new HashSet<Address>();
         for(int i = 0; i < tokenOwners.length(); i++){
             Address delegate = tokenOwners.get(BigInteger.valueOf(i));
@@ -585,32 +589,47 @@ public class Alice extends IRC31MintBurn {
         return _delegates;
     }
 
-
     /**
      * Readonly functions
      **/
 
     @External(readonly = true)
-    public String getProposals(){
-        JsonObject json = new JsonObject();
-        JsonArray details = new JsonArray();
-        JsonObject mainJson = new JsonObject();
-        int amount = proposalCounter.get().intValue();
-        for (int i = 0; i < amount; i++) {
+    public Map<String, Map<String, String>> getAllProposals(){
+        Map<String, Map<String, String>> proposals = new HashMap<>();
+        int latest = proposalCounter.get().intValue();
+        for(int i = 0; i < latest; i++){
             Proposal p = proposalDB.get(BigInteger.valueOf(i));
             BigInteger[] voteStatus = getVotes(BigInteger.valueOf(i));
 
-            json.add("id", p.id.toString());
-            json.add("startBlockHeight", p.startBlockHeight.toString());
-            json.add("status", p.status);
-            json.add("disagreeVotes", voteStatus[0].toString());
-            json.add("agreeVotes", voteStatus[1].toString());
-            json.add("noVotes", voteStatus[2].toString());
-
-            details.add(json);
-            json = new JsonObject();
+            Map<String, String> proposalInfo = new HashMap<>();
+            proposalInfo.put("startBlockHeight", p.startBlockHeight.toString());
+            proposalInfo.put("startTimestamp", String.valueOf(p.startTimestamp));
+            proposalInfo.put("status", String.valueOf(p.status));
+            proposalInfo.put("disagreeVotes", voteStatus[0].toString());
+            proposalInfo.put("agreeVotes", voteStatus[1].toString());
+            proposalInfo.put("noVotes", voteStatus[2].toString());
+            proposals.put(String.valueOf(i), proposalInfo);
         }
-        mainJson.add("proposals", details);
-        return mainJson.toString();
+        return proposals;
+    }
+
+    @External(readonly=true)
+    public BigInteger getProposalCounter(){
+        return proposalCounter.get();
+    }
+
+    @External(readonly=true)
+    public Map<String, String> getProposal(BigInteger id){
+        Proposal p = proposalDB.get(id);
+        BigInteger[] voteStatus = getVotes(id);
+
+        Map<String, String> proposalInfo = new HashMap<>();
+        proposalInfo.put("startBlockHeight", p.startBlockHeight.toString());
+        proposalInfo.put("startTimestamp", String.valueOf(p.startTimestamp));
+        proposalInfo.put("status", String.valueOf(p.status));
+        proposalInfo.put("disagreeVotes", voteStatus[0].toString());
+        proposalInfo.put("agreeVotes", voteStatus[1].toString());
+        proposalInfo.put("noVotes", voteStatus[2].toString());
+        return proposalInfo;
     }
 }

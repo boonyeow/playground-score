@@ -11,6 +11,7 @@ public class Proposal {
     public BigInteger id;
     public BigInteger startBlockHeight;
     public BigInteger endBlockHeight;
+    public long startTimestamp;
     public int status;
     public Address proposer;
     public VoteInfo vote;
@@ -19,6 +20,7 @@ public class Proposal {
             BigInteger id,
             BigInteger startBlockHeight,
             BigInteger endBlockHeight,
+            long startTimestamp,
             int status,
             Address proposer,
             VoteInfo vote
@@ -26,16 +28,18 @@ public class Proposal {
         this.id = id;
         this.startBlockHeight = startBlockHeight;
         this.endBlockHeight = endBlockHeight;
+        this.startTimestamp = startTimestamp;
         this.status = status;
         this.proposer = proposer;
         this.vote = vote;
     }
 
     public static void writeObject(ObjectWriter w, Proposal p) {
-        w.beginList(6);
+        w.beginList(7);
         w.write(p.id);
         w.write(p.startBlockHeight);
         w.write(p.endBlockHeight);
+        w.write(p.startTimestamp);
         w.write(p.status);
         w.write(p.proposer);
         w.write(p.vote);
@@ -48,6 +52,7 @@ public class Proposal {
                 r.readBigInteger(),
                 r.readBigInteger(),
                 r.readBigInteger(),
+                r.readLong(),
                 r.readInt(),
                 r.readAddress(),
                 r.read(VoteInfo.class)

@@ -17,6 +17,7 @@ public class ProjectInfo {
     public BigInteger pricePerNFT;
     public BigInteger startTimestamp;
     public BigInteger endTimestamp;
+    public BigInteger withdrawalRate;
 
     public ProjectInfo(String name){
         this.name = name;
@@ -27,6 +28,7 @@ public class ProjectInfo {
         this.pricePerNFT = BigInteger.ZERO;
         this.startTimestamp = BigInteger.ZERO;
         this.endTimestamp = BigInteger.ZERO;
+        this.withdrawalRate = BigInteger.ZERO;
     }
 
     public ProjectInfo(){
@@ -64,6 +66,7 @@ public class ProjectInfo {
     public void setEndTimestamp(BigInteger endTimestamp){
         this.endTimestamp = endTimestamp;
     }
+    public void setWithdrawalRate(BigInteger withdrawalRate){this.withdrawalRate = withdrawalRate;}
 
     public static void writeObject(ObjectWriter writer, ProjectInfo obj){
         obj.writeObject(writer);
@@ -79,11 +82,12 @@ public class ProjectInfo {
         obj.pricePerNFT = reader.readBigInteger();
         obj.startTimestamp = reader.readBigInteger();
         obj.endTimestamp = reader.readBigInteger();
+        obj.withdrawalRate = reader.readBigInteger();
         reader.end();
         return obj;
     }
     public void writeObject(ObjectWriter writer){
-        writer.beginList(8);
+        writer.beginList(9);
         writer.write(this.name);
         writer.write(this.thumbnailSrc);
         writer.write(this.description);
@@ -92,6 +96,7 @@ public class ProjectInfo {
         writer.write(this.pricePerNFT);
         writer.write(this.startTimestamp);
         writer.write(this.endTimestamp);
+        writer.write(this.withdrawalRate);
         writer.end();
     }
 
@@ -115,7 +120,8 @@ public class ProjectInfo {
                 "fundingGoal", fundingGoal,
                 "pricePerNFT", pricePerNFT,
                 "startTimestamp", startTimestamp,
-                "endTimestamp", endTimestamp
+                "endTimestamp", endTimestamp,
+                "withdrawalRate", withdrawalRate
         );
     }
 }

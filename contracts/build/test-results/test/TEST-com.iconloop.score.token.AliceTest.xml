@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.iconloop.score.token.AliceTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2022-08-01T14:49:05" hostname="DESKTOP-1KI77T4" time="0.232">
+<testsuite name="com.iconloop.score.token.AliceTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2022-08-07T12:00:35" hostname="DESKTOP-1KI77T4" time="0.188">
   <properties/>
-  <testcase name="testest()" classname="com.iconloop.score.token.AliceTest" time="0.19"/>
-  <testcase name="mint_tc1()" classname="com.iconloop.score.token.AliceTest" time="0.032"/>
+  <testcase name="testest()" classname="com.iconloop.score.token.AliceTest" time="0.152"/>
+  <testcase name="mint_tc1()" classname="com.iconloop.score.token.AliceTest" time="0.027"/>
   <testcase name="project_info_tc1()" classname="com.iconloop.score.token.AliceTest" time="0.001"/>
   <testcase name="delegation_tc1()" classname="com.iconloop.score.token.AliceTest" time="0.003"/>
   <testcase name="delegation_tc2()" classname="com.iconloop.score.token.AliceTest" time="0.003"/>
