@@ -632,4 +632,28 @@ public class Alice extends IRC31MintBurn {
         proposalInfo.put("noVotes", voteStatus[2].toString());
         return proposalInfo;
     }
+
+    @External(readonly=true)
+    public Map<String,Map<String, String>> getProposalByUser(Address user){
+        BigInteger proposalCounter = getProposalCounter();
+
+        Map<String, Map<String, String>> proposals = new HashMap<>();
+        for(int i = 0; i < proposalCounter.intValue(); i++){
+            BigInteger proposalID = BigInteger.valueOf(i);
+            Proposal p = proposalDB.get(proposalID);
+            if(user.equals(p.proposer)){
+
+                BigInteger[] voteStatus = getVotes(proposalID);
+                Map<String, String> proposalInfo = new HashMap<>();
+                proposalInfo.put("startBlockHeight", p.startBlockHeight.toString());
+                proposalInfo.put("startTimestamp", String.valueOf(p.startTimestamp));
+                proposalInfo.put("status", String.valueOf(p.status));
+                proposalInfo.put("disagreeVotes", voteStatus[0].toString());
+                proposalInfo.put("agreeVotes", voteStatus[1].toString());
+                proposalInfo.put("noVotes", voteStatus[2].toString());
+                proposals.put(proposalID.toString(), proposalInfo);
+            }
+        }
+        return proposals;
+    }
 }
