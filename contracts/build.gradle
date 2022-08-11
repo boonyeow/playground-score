@@ -55,11 +55,11 @@ deployJar {
     }
 //    keystore = "/mnt/c/Users/boon/Desktop/icon/godwallet.json"//rootProject.hasProperty('keystoreName') ? "$keystoreName" : ''
 //    password = "gochain" //rootProject.hasProperty('keystorePass') ? "$keystorePass" : ''
-    keystore="/mnt/c/Users/boon/Desktop/icon/test123@_hx137ceb2e58e5008a4a7c282609e508251dab74ce.json"
-    password="test123@"
+    keystore="/Users/yongjiun/icon_localnode/goloop/wallet.json"
+    password="gochain"
     parameters {
          arg('_name', 'TESTNAME')
-        arg('_signerAddress', 'hx1f199d7b495ebb2ce3cf704a5dc3c2ac584b6cd3')
+        arg('_signerAddress', 'hx8ef5d0dfa819616a4b09daa6a5814291d592820e')
     }
 }
 

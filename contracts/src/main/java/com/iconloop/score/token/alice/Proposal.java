@@ -16,6 +16,10 @@ public class Proposal {
     public int proposalType;
     public Address proposer;
     public VoteInfo vote;
+    public String description;
+    public String title;
+    public BigInteger withdrawalRate;
+    public String discussion;
 
     public Proposal(
             BigInteger id,
@@ -25,7 +29,11 @@ public class Proposal {
             int status,
             int proposalType,
             Address proposer,
-            VoteInfo vote
+            VoteInfo vote,
+            String description,
+            String title,
+            BigInteger withdrawalRate,
+            String discussion
     ){
         this.id = id;
         this.startBlockHeight = startBlockHeight;
@@ -35,10 +43,14 @@ public class Proposal {
         this.proposalType = proposalType;
         this.proposer = proposer;
         this.vote = vote;
+        this.description = description;
+        this.title = title;
+        this.withdrawalRate = withdrawalRate;
+        this.discussion = discussion;
     }
 
     public static void writeObject(ObjectWriter w, Proposal p) {
-        w.beginList(7);
+        w.beginList(12);
         w.write(p.id);
         w.write(p.startBlockHeight);
         w.write(p.endBlockHeight);
@@ -47,6 +59,10 @@ public class Proposal {
         w.write(p.proposalType);
         w.write(p.proposer);
         w.write(p.vote);
+        w.write(p.description);
+        w.write(p.title);
+        w.write(p.withdrawalRate);
+        w.write(p.discussion);
         w.end();
     }
 
@@ -60,7 +76,11 @@ public class Proposal {
                 r.readInt(),
                 r.readInt(),
                 r.readAddress(),
-                r.read(VoteInfo.class)
+                r.read(VoteInfo.class),
+                r.readString(),
+                r.readString(),
+                r.readBigInteger(),
+                r.readString()
         );
         r.end();
         return p;

@@ -533,4 +533,12 @@ public class AliceTest extends TestBase {
         BigInteger qty = BigInteger.ONE;
         assertEquals(true, qty.compareTo(BigInteger.ONE) >= 0);
     }
+
+    @Test
+    void test_proposal(){
+        Account user1 = sm.createAccount();
+        tokenScore.invoke(user1, "mint", BigInteger.valueOf(0), BigInteger.ONE, "test.com");
+        tokenScore.invoke(user1, "createProposal", "hi", "hello", 1, BigInteger.ONE, "nihao");
+        assertEquals(1, 1);
+    }
 }
