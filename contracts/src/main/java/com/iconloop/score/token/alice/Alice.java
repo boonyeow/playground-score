@@ -118,7 +118,7 @@ public class Alice extends IRC31MintBurn {
     }
 
     @External
-    public void createProposal(BigInteger startBlockHeight){
+    public void createProposal(BigInteger startBlockHeight, int proposalType){
         Address caller = Context.getCaller();
         Context.require(balanceOf(caller).intValue() > 0, "caller not allowed to create proposal");
 
@@ -130,6 +130,7 @@ public class Alice extends IRC31MintBurn {
                 currentBlockHeight.add(BigInteger.valueOf(1000)),
                 Context.getTransactionTimestamp(),
                 PROPOSAL_STATUS_ACTIVE,
+                proposalType,
                 caller,
                 new VoteInfo()
         );

@@ -13,6 +13,7 @@ public class Proposal {
     public BigInteger endBlockHeight;
     public long startTimestamp;
     public int status;
+    public int proposalType;
     public Address proposer;
     public VoteInfo vote;
 
@@ -22,6 +23,7 @@ public class Proposal {
             BigInteger endBlockHeight,
             long startTimestamp,
             int status,
+            int proposalType,
             Address proposer,
             VoteInfo vote
     ){
@@ -30,6 +32,7 @@ public class Proposal {
         this.endBlockHeight = endBlockHeight;
         this.startTimestamp = startTimestamp;
         this.status = status;
+        this.proposalType = proposalType;
         this.proposer = proposer;
         this.vote = vote;
     }
@@ -41,6 +44,7 @@ public class Proposal {
         w.write(p.endBlockHeight);
         w.write(p.startTimestamp);
         w.write(p.status);
+        w.write(p.proposalType);
         w.write(p.proposer);
         w.write(p.vote);
         w.end();
@@ -53,6 +57,7 @@ public class Proposal {
                 r.readBigInteger(),
                 r.readBigInteger(),
                 r.readLong(),
+                r.readInt(),
                 r.readInt(),
                 r.readAddress(),
                 r.read(VoteInfo.class)
