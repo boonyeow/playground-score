@@ -5,6 +5,7 @@ import score.ObjectReader;
 import score.ObjectWriter;
 
 import java.math.BigInteger;
+import java.util.Map;
 import java.util.Set;
 
 public class Proposal {
@@ -139,6 +140,21 @@ public class Proposal {
             vote.agree.setVoters(agreeVotes);
             vote.agree.setAmount(updatedAgree);
         }
+    }
+
+    public Map<String, Object> toMap(){
+        Map<String, Object> contents = Map.of(
+                "startBlockHeight", startBlockHeight,
+                "endBlockHeight", endBlockHeight,
+                "startTimestamp", startTimestamp,
+                "status", status,
+                "proposalType", proposalType,
+                "proposer", proposer,
+                "description", description,
+                "title", title,
+                "withdrawalRate", withdrawalRate,
+                "discussion", discussion);
+        return contents;
     }
 
     public void setStatus(int status){

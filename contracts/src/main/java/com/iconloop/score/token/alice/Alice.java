@@ -553,7 +553,7 @@ public class Alice extends IRC31MintBurn {
     public void test1(BigInteger quantity){ // mint; to change name
         Context.require(quantity.compareTo(BigInteger.ONE) >= 0, "User must mint at least one NFT");
         ProjectInfo pi = projectInfo.get();
-        BigInteger totalPrice = quantity.multiply(pi.pricePerNFT).multiply(EXA);
+        BigInteger totalPrice = quantity.multiply(pi.pricePerNFT);
         Context.require(totalPrice.compareTo(Context.getValue()) == 0, "Invalid amount received");
 
         BigInteger nextID = totalSupply();
@@ -598,25 +598,6 @@ public class Alice extends IRC31MintBurn {
      * Readonly functions
      **/
 
-    @External(readonly = true)
-    public Map<String, Map<String, String>> getAllProposals(){
-        Map<String, Map<String, String>> proposals = new HashMap<>();
-        int latest = proposalCounter.get().intValue();
-        for(int i = 0; i < latest; i++){
-            Proposal p = proposalDB.get(BigInteger.valueOf(i));
-            BigInteger[] voteStatus = getVotes(BigInteger.valueOf(i));
-
-            Map<String, String> proposalInfo = new HashMap<>();
-            proposalInfo.put("startBlockHeight", p.startBlockHeight.toString());
-            proposalInfo.put("startTimestamp", String.valueOf(p.startTimestamp));
-            proposalInfo.put("status", String.valueOf(p.status));
-            proposalInfo.put("disagreeVotes", voteStatus[0].toString());
-            proposalInfo.put("agreeVotes", voteStatus[1].toString());
-            proposalInfo.put("noVotes", voteStatus[2].toString());
-            proposals.put(String.valueOf(i), proposalInfo);
-        }
-        return proposals;
-    }
 
     @External(readonly=true)
     public BigInteger getProposalCounter(){
@@ -624,19 +605,36 @@ public class Alice extends IRC31MintBurn {
     }
 
     @External(readonly=true)
-    public Map<String, String> getProposal(BigInteger id){
+    public Map<String, Object> getProposalInfo(BigInteger id){
         Proposal p = proposalDB.get(id);
-        BigInteger[] voteStatus = getVotes(id);
-
-        Map<String, String> proposalInfo = new HashMap<>();
-        proposalInfo.put("startBlockHeight", p.startBlockHeight.toString());
-        proposalInfo.put("startTimestamp", String.valueOf(p.startTimestamp));
-        proposalInfo.put("status", String.valueOf(p.status));
-        proposalInfo.put("disagreeVotes", voteStatus[0].toString());
-        proposalInfo.put("agreeVotes", voteStatus[1].toString());
-        proposalInfo.put("noVotes", voteStatus[2].toString());
-        return proposalInfo;
+        BigInteger[] voteStatus= getVotes(id);
+        return Map.ofEntries(
+                Map.entry("info", p.toMap()),
+                Map.entry("disagreeVotes", voteStatus[0]),
+                Map.entry("agreeVotes", voteStatus[1]),
+                Map.entry("noVotes", voteStatus[2])
+        );
     }
+
+    @External(readonly = true)
+    public Map<String, Map<String, Object>> getAllProposalInfo(){
+        Map<String, Map<String, Object>> proposals = new HashMap<>();
+        int latest = proposalCounter.get().intValue();
+        for(int i = 0; i < latest; i++){
+            Proposal p = proposalDB.get(BigInteger.valueOf(i));
+            BigInteger[] voteStatus = getVotes(BigInteger.valueOf(i));
+
+            Map<String, Object> temp = Map.ofEntries(
+                    Map.entry("info", p.toMap()),
+                    Map.entry("disagreeVotes", voteStatus[0]),
+                    Map.entry("agreeVotes", voteStatus[1]),
+                    Map.entry("noVotes", voteStatus[2])
+            );
+            proposals.put(String.valueOf(i), temp);
+        }
+        return proposals;
+    }
+
 
     @External(readonly=true)
     public Map<String,Map<String, String>> getProposalByUser(Address user){
@@ -660,5 +658,88 @@ public class Alice extends IRC31MintBurn {
             }
         }
         return proposals;
+    }
+
+
+    @External(readonly=true)
+    public Map<String, Map<String, BigInteger>> getParticipationInfo(BigInteger proposalID){
+        Proposal p = proposalDB.get(proposalID);
+        Set<Address> noVoters = p.vote.noVote.getVoters();
+        Set<Address> agreeVoters = p.vote.agree.getVoters();
+        Set<Address> disagreeVoters = p.vote.disagree.getVoters();
+
+        Map<String, Map<String, BigInteger>> data = new HashMap<>();
+        data.put("agree", new HashMap<>());
+        for(Address user : agreeVoters){
+            data.get("agree").put(user.toString(), balanceOf(user));
+        }
+        data.put("disagree", new HashMap<>());
+        for(Address user : disagreeVoters){
+            data.get("disagree").put(user.toString(), balanceOf(user));
+        }
+
+        data.put("novotes", new HashMap<>());
+        Map<Address, Address> mapping = new HashMap<Address, Address>();
+        for(Address user: noVoters){
+            String _user = user.toString();
+            Checkpoint cp = _delegationCheckpoints.at(user).get(_delegationCheckpoints.at(user).size() - 1);
+            if(cp.delegate.equals(user)){
+                // user delegated to him/herself but did not vote
+                mapping.put(user, user);
+                if(data.get("novotes").get(_user) == (null)){
+                    data.get("novotes").put(_user, cp.votingPower);
+                }
+                else{
+                    data.get("novotes").put(_user, data.get("novotes").get(_user).add(cp.votingPower));
+                }
+            }
+            else{
+                Address usr = user; // initialze starting point
+                Address delegate = cp.delegate;
+                Set<Address> temp = new HashSet<Address>();
+                BigInteger consolidatedPower = BigInteger.ZERO;
+
+                while(!usr.equals(delegate)){
+                    if(!mapping.containsKey(usr)){
+                        consolidatedPower = consolidatedPower.add(getCheckpointAtBlock(usr, p.endBlockHeight).votingPower);
+                        temp.add(delegate);
+                    }
+                    usr = delegate;
+                    delegate = getCheckpointAtBlock(usr, p.endBlockHeight).delegate;
+                }
+
+                for(Address addr : temp){
+                    mapping.put(addr, delegate);
+                }
+
+                Integer _voteChoice = voteStatusDB.at(proposalID).getOrDefault(delegate, 2);
+                String _delegate = delegate.toString();
+                if(_voteChoice == VoteInfo.DISAGREE_VOTE){
+                    if(data.get("disagree").get(_delegate) == null){
+                        data.get("disagree").put(_delegate, consolidatedPower);
+                    }
+                    else{
+                        data.get("disagree").put(_delegate, data.get("disagree").get(_delegate).add(consolidatedPower));
+                    }
+                }
+                else if(_voteChoice == VoteInfo.AGREE_VOTE){
+                    if(data.get("agree").get(_delegate) == null){
+                        data.get("agree").put(_delegate, consolidatedPower);
+                    }
+                    else{
+                        data.get("agree").put(_delegate, data.get("agree").get(_delegate).add(consolidatedPower));
+                    }
+                }
+                else{
+                    if(data.get("novotes").get(_delegate) == null){
+                        data.get("novotes").put(_delegate, consolidatedPower);
+                    }
+                    else{
+                        data.get("novotes").put(_delegate, data.get("novotes").get(_delegate).add(consolidatedPower));
+                    }
+                }
+            }
+        }
+        return data;
     }
 }

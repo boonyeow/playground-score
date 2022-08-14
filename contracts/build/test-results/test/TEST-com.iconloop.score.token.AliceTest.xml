@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.iconloop.score.token.AliceTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2022-08-10T08:18:45" hostname="DESKTOP-1KI77T4" time="0.218">
+<testsuite name="com.iconloop.score.token.AliceTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2022-08-13T17:20:23" hostname="DESKTOP-1KI77T4" time="0.23">
   <properties/>
-  <testcase name="testest()" classname="com.iconloop.score.token.AliceTest" time="0.178"/>
-  <testcase name="mint_tc1()" classname="com.iconloop.score.token.AliceTest" time="0.029"/>
+  <testcase name="testest()" classname="com.iconloop.score.token.AliceTest" time="0.162"/>
+  <testcase name="mint_tc1()" classname="com.iconloop.score.token.AliceTest" time="0.037"/>
   <testcase name="project_info_tc1()" classname="com.iconloop.score.token.AliceTest" time="0.001"/>
-  <testcase name="delegation_tc1()" classname="com.iconloop.score.token.AliceTest" time="0.003"/>
+  <testcase name="get_participation_tc1()" classname="com.iconloop.score.token.AliceTest" time="0.017"/>
+  <testcase name="delegation_tc1()" classname="com.iconloop.score.token.AliceTest" time="0.002"/>
   <testcase name="delegation_tc2()" classname="com.iconloop.score.token.AliceTest" time="0.003"/>
-  <testcase name="delegation_tc3()" classname="com.iconloop.score.token.AliceTest" time="0.001"/>
-  <system-out><![CDATA[]]></system-out>
+  <testcase name="delegation_tc3()" classname="com.iconloop.score.token.AliceTest" time="0.002"/>
+  <testcase name="test_proposal()" classname="com.iconloop.score.token.AliceTest" time="0.001"/>
+  <system-out><![CDATA[hx0000000000000000000000000000000000000008
+]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

@@ -525,7 +525,7 @@ public class AliceTest extends TestBase {
         tokenScore.invoke(owner, "updateProjectInfo", "hey", "", "", "", BigInteger.ZERO, BigInteger.ONE, BigInteger.ZERO, BigInteger.ZERO, BigInteger.ZERO);
 //        sm.call(BigInteger.valueOf(10), owner.getAddress(), "test1", BigInteger.valueOf(10));
 //        Context.call(BigInteger.valueOf(10), tokenScore.getAddress(), "test1", BigInteger.valueOf(10));
-        sm.call(owner, BigInteger.valueOf(10).multiply(EXA), tokenScore.getAddress(), "test1", BigInteger.valueOf(10));
+        sm.call(owner, BigInteger.valueOf(10), tokenScore.getAddress(), "test1", BigInteger.valueOf(10));
     }
 
     @Test
@@ -540,5 +540,31 @@ public class AliceTest extends TestBase {
         tokenScore.invoke(user1, "mint", BigInteger.valueOf(0), BigInteger.ONE, "test.com");
         tokenScore.invoke(user1, "createProposal", "hi", "hello", 1, BigInteger.ONE, "nihao");
         assertEquals(1, 1);
+    }
+
+
+//    @Test
+//    void testt_proposal(){
+//        Account user1 = sm.createAccount();
+//        tokenScore.invoke(user1, "mint", BigInteger.valueOf(0), BigInteger.ONE, "test.com");
+//        tokenScore.invoke(user1, "createProposal", "hi", "hello", 1, BigInteger.ONE, "nihao");
+//        assertEquals(tokenScore.call("getProposalInfo", BigInteger.ZERO), 1);
+//    }
+    @Test
+    void get_participation_tc1(){
+        Account user1 = sm.createAccount();
+        Account user2 = sm.createAccount();
+        Account user3 = sm.createAccount();
+        System.out.println(user3.getAddress());
+        tokenScore.invoke(user1, "mint", BigInteger.valueOf(0), BigInteger.ONE, "test.com");
+        tokenScore.invoke(user2, "mint", BigInteger.valueOf(1), BigInteger.ONE, "test.com");
+        tokenScore.invoke(user3, "mint", BigInteger.valueOf(2), BigInteger.ONE, "test.com");
+        tokenScore.invoke(user2, "setDelegation", user3.getAddress());
+        tokenScore.invoke(user1, "createProposal", "hi", "hello", 1, BigInteger.ONE, "nihao");
+        tokenScore.invoke(user1, "voteProposal", BigInteger.ZERO, 1);
+
+
+        Map<String, Map<Address, BigInteger>> temp = (Map<String, Map<Address, BigInteger>>) tokenScore.call("getParticipationInfo", BigInteger.ZERO);
+        assertEquals(1,1);
     }
 }
