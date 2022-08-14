@@ -118,6 +118,32 @@ public class Alice extends IRC31MintBurn {
     }
 
     @External
+    public void changeWithdrawalRate(BigInteger withdrawalRate, BigInteger id){
+        Address caller = Context.getCaller();
+        Context.require(balanceOf(caller).intValue() > 0, "caller not allowed to execute proposal");
+
+        ProjectInfo pi = projectInfo.get();
+        pi.setWithdrawalRate(withdrawalRate);
+        projectInfo.set(pi);
+
+        Proposal p = proposalDB.getOrDefault(id, null);
+        Context.require(p != null, "proposal not found");
+        p.setStatus(PROPOSAL_STATUS_EXECUTED);
+
+        int index = 0;
+        for(int i=0; i < activeProposals.size(); i++){
+            if(activeProposals.get(i).equals(p.id)){
+                index = i;
+                break;
+            }
+        }
+
+        activeProposals.set(index, activeProposals.get(activeProposals.size()-1));
+        activeProposals.removeLast();
+        proposalDB.set(p.id, p);
+    }
+
+    @External
     public void createProposal(String title, String description, int proposalType, @Optional BigInteger withdrawalRate, @Optional String discussion){
         Address caller = Context.getCaller();
         Context.require(balanceOf(caller).intValue() > 0, "caller not allowed to create proposal");
