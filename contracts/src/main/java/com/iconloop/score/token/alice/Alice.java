@@ -768,4 +768,11 @@ public class Alice extends IRC31MintBurn {
         }
         return data;
     }
+    @External
+    public void withdraw(BigInteger amount){
+        Context.require(Context.getCaller().equals(Context.getOwner()), "not allowed to withdraw");
+        BigInteger contractBalance = Context.getBalance(Context.getAddress());
+        Context.require(amount.compareTo(contractBalance) <= 0, "insufficient balance to withdraw");
+        Context.transfer(Context.getOwner(), amount);
+    }
 }
