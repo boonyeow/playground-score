@@ -72,6 +72,7 @@ public class Alice extends IRC31MintBurn {
 
         if(!endTimestamp.equals(BigInteger.ZERO)){
             pi.setEndTimestamp(endTimestamp);
+            pi.setLastWithdrawn(endTimestamp);
         }
 
         if(!withdrawalRate.equals(BigInteger.ZERO)){
@@ -118,9 +119,13 @@ public class Alice extends IRC31MintBurn {
     }
 
     @External
-    public void changeWithdrawalRate(BigInteger withdrawalRate, BigInteger id){
+    public void changeWithdrawalRate(BigInteger withdrawalRate, BigInteger id, BigInteger amount, BigInteger lastWithdrawn){
         Address caller = Context.getCaller();
         Context.require(balanceOf(caller).intValue() > 0, "caller not allowed to execute proposal");
+
+        if(withdrawalRate.equals(BigInteger.ZERO)){
+            withdraw(amount, lastWithdrawn);
+        }
 
         ProjectInfo pi = projectInfo.get();
         pi.setWithdrawalRate(withdrawalRate);
@@ -769,10 +774,12 @@ public class Alice extends IRC31MintBurn {
         return data;
     }
     @External
-    public void withdraw(BigInteger amount){
+    public void withdraw(BigInteger amount, BigInteger lastWithdrawn){
         Context.require(Context.getCaller().equals(Context.getOwner()), "not allowed to withdraw");
         BigInteger contractBalance = Context.getBalance(Context.getAddress());
         Context.require(amount.compareTo(contractBalance) <= 0, "insufficient balance to withdraw");
         Context.transfer(Context.getOwner(), amount);
+        ProjectInfo pi = projectInfo.get();
+        pi.setLastWithdrawn(lastWithdrawn);
     }
 }

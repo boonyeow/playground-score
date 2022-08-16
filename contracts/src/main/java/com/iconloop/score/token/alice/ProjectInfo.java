@@ -18,6 +18,8 @@ public class ProjectInfo {
     public BigInteger startTimestamp;
     public BigInteger endTimestamp;
     public BigInteger withdrawalRate;
+    public BigInteger lastWithdrawn;
+
 
     public ProjectInfo(String name){
         this.name = name;
@@ -29,6 +31,8 @@ public class ProjectInfo {
         this.startTimestamp = BigInteger.ZERO;
         this.endTimestamp = BigInteger.ZERO;
         this.withdrawalRate = BigInteger.ZERO;
+        this.lastWithdrawn = BigInteger.ZERO;
+
     }
 
     public ProjectInfo(){
@@ -68,6 +72,10 @@ public class ProjectInfo {
     }
     public void setWithdrawalRate(BigInteger withdrawalRate){this.withdrawalRate = withdrawalRate;}
 
+    public void setLastWithdrawn(BigInteger lastWithdrawn){
+        this.lastWithdrawn = lastWithdrawn;
+    }
+
     public static void writeObject(ObjectWriter writer, ProjectInfo obj){
         obj.writeObject(writer);
     }
@@ -83,11 +91,13 @@ public class ProjectInfo {
         obj.startTimestamp = reader.readBigInteger();
         obj.endTimestamp = reader.readBigInteger();
         obj.withdrawalRate = reader.readBigInteger();
+        obj.lastWithdrawn = reader.readBigInteger();
+
         reader.end();
         return obj;
     }
     public void writeObject(ObjectWriter writer){
-        writer.beginList(9);
+        writer.beginList(10);
         writer.write(this.name);
         writer.write(this.thumbnailSrc);
         writer.write(this.description);
@@ -97,6 +107,7 @@ public class ProjectInfo {
         writer.write(this.startTimestamp);
         writer.write(this.endTimestamp);
         writer.write(this.withdrawalRate);
+        writer.write(this.lastWithdrawn);
         writer.end();
     }
 
@@ -121,7 +132,8 @@ public class ProjectInfo {
                 "pricePerNFT", pricePerNFT,
                 "startTimestamp", startTimestamp,
                 "endTimestamp", endTimestamp,
-                "withdrawalRate", withdrawalRate
+                "withdrawalRate", withdrawalRate,
+                "lastWithdrawn", lastWithdrawn
         );
     }
 }
